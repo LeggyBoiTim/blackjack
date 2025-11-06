@@ -8,28 +8,16 @@
 </head>
 <body>
     <div id="dealerSide">
-        <div class="cardLayer">
-            <div class="card">AA</div>
-            <div class="card">BB</div>
-            <div class="card">CC</div>
-            <div class="card">DD</div>
-            <div class="card">EE</div>
-            <div class="score">Dealer Score</div>
-        </div>
+        <div id="dealerHand"></div>
+        <div id="dealerScore">Dealer's Score: 0</div>
     </div>
     <div id="playerside">
-            <div class="cardLayer">            
-                <div class="card">AA</div>
-                <div class="card">BB</div>
-                <div class="card">CC</div>
-                <div class="card">DD</div>
-                <div class="card">EE</div>
-                <div class="score">Player Score</div>
-            </div>
+            <div id="playerHand"></div>
+            <div id="playerScore">Player's Score: 0</div>
     </div>
     <div id="interface">
-        <button>Deal</button>
-        <button>Pass</button>
+        <button id="dealButton" onclick="deal()">Deal</button>
+        <button id="passButton" onclick="pass()">Pass</button>
     </div>
     <script src="script.js"></script>
 </body>
