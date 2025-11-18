@@ -22,11 +22,12 @@
 #dealerScore, #playerScore {
     border: 5px, solid, black;
     border-radius: 5px;
+    width: 400px;
     padding: 5px;
     display: inline-block;
 }
 
-#dealerCard {
+.hidden {
     color: transparent;
     user-select: none;
 }
