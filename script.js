@@ -15,41 +15,51 @@ class Player {
     constructor(name, handDisplay, scoreDisplay) {
         this.hand = [];
         this.score = 0;
-        this.hasAce = false;
+        this.aceCount = 0;
         this.hasBlackjack = false;
         this.name = name;
         this.handDisplay = handDisplay;
         this.scoreDisplay = scoreDisplay;
     }
+
     // Add card to the player's hand.
     addCardToHand() {
         this.hand.push(deck.pop());
     }
-    // Calculate the player's score, and keeps track of blackjack.
+
+    // Calculate the player's score, and keeps track of aces and blackjack.
     calculateScore() {
         this.score = 0;
+        this.aceCount = 0;
+        
         for (let card of this.hand) {
             let rank = card.charAt(card.length - 1);
             if (rank === '0' || rank === 'J' || rank === 'Q' || rank === 'K') {
                 this.score += 10;
             } else if (rank === 'A') {
                 this.score += 11;
-                this.hasAce = true;
+                this.aceCount += 1;
             } else {
                 this.score += Number(rank);
             }
         }
-        if (this.hasAce && this.score > 21) {
+
+        while (this.score > 21 && this.aceCount > 0) {
             this.score -= 10;
-        } else if (this.hasAce && this.score === 21) {
+            this.aceCount -= 1;
+        }
+        
+        if (this.aceCount > 0 && this.score === 21 && this.hand.length === 2) {
             this.hasBlackjack = true;
         }
     }
+
     // Update the hand display.
     updateHandDisplay() {
         while (this.handDisplay.firstChild) {
             this.handDisplay.removeChild(this.handDisplay.firstChild);
         }
+        
         for (let card of this.hand) {
             let newDiv = document.createElement('div');
             newDiv.className = 'card';
@@ -57,14 +67,12 @@ class Player {
             this.handDisplay.appendChild(newDiv);
         }
     }
+
     // Update the score display.
     updateScoreDisplay() {
         this.scoreDisplay.innerHTML = `${this.name}'s Score: ${this.score}`;
     }
 }
-
-const dealer = new Player('Dealer', dealerHandRow, dealerScoreRow);
-const player = new Player('Player', playerHandRow, playerScoreRow);
 
 // Create a deck of cards from the suits and ranks.
 const createDeck = () => {
@@ -83,19 +91,49 @@ const fisherYatesShuffle = () => {
     }
 }
 
-// Checks the current state of the game. Returns true if the game has ended in some way.
-const gameCheck = () => {
-    
+const gameEnd = () => {
+    dealer.handDisplay.children[1].classList.remove('hidden');
+    dealer.scoreDisplay.classList.remove('hidden');
+    passButton.disabled = true;
+    dealButton.innerHTML = 'New Game'
+    dealButton.setAttribute('onclick', 'location.reload()');
 }
 
-// Checks whether the dealer or player has won.
-const gameEnd = () => {
-    if (dealer.score > player.score) {
+// Sets the game to the player having won.
+const gameWin = () => {
+    player.scoreDisplay.innerHTML = `${player.name}'s Score: ${player.score} Player won!`
+    gameEnd();
+}
 
-    } else if (dealer.score < player.score) {
+// Sets the game to the player having lost.
+const gameLose = () => {
+    player.scoreDisplay.innerHTML = `${player.name}'s Score: ${player.score} Player lost!`
+    gameEnd();
+}
 
+// Sets the game to a tie.
+const gameTie = () => {
+    player.scoreDisplay.innerHTML = `${player.name}'s Score: ${player.score} Tie!`
+    gameEnd();
+}
+
+// Make the dealer draw cards until a win condition is met.
+const dealerTurn = () => {
+    while (dealer.score < 17) {
+        dealer.addCardToHand();
+        dealer.calculateScore();
+        dealer.updateHandDisplay();
+        dealer.updateScoreDisplay();
+    }
+    
+    if (dealer.score > 21) {
+        gameWin();
+    } else if (dealer.score > player.score) {
+        gameLose();
+    } else if (dealer.score === player.score) {
+        gameTie();
     } else {
-
+        gameWin();
     }
 }
 
@@ -105,26 +143,27 @@ const deal = () => {
         dealer.addCardToHand();
         player.addCardToHand();
     }
+    
     dealer.calculateScore();
     player.calculateScore();
+    
     dealer.updateHandDisplay();
     player.updateHandDisplay();
+    
     dealer.updateScoreDisplay();
     player.updateScoreDisplay();
     dealer.handDisplay.children[1].classList.add('hidden');
     dealer.scoreDisplay.classList.add('hidden');
     dealButton.innerHTML = 'Hit';
     dealButton.setAttribute('onclick', 'hit()');
-    gameCheck();
-}
-
-// Make the dealer draw cards until a win condition is met.
-const dealerTurn = () => {
-    dealer.addCardToHand();
-    dealer.calculateScore();
-    dealer.updateHandDisplay();
-    dealer.updateScoreDisplay();
-    gameCheck();
+    passButton.disabled = false;
+    if (player.hasBlackjack && dealer.hasBlackjack) {
+        gameTie();
+    } else if (dealer.hasBlackjack) {
+        gameLose();
+    } else if (player.hasBlackjack) {
+        gameWin();
+    }
 }
 
 // Make the player hit.
@@ -133,16 +172,22 @@ const hit = () => {
     player.calculateScore();
     player.updateHandDisplay();
     player.updateScoreDisplay();
-    gameCheck();
+    if (player.score > 21) {
+        gameLose();
+    } else if (player.score === 21) {
+        pass();
+    }
 }
 
 // Make the player pass.
 const pass = () => {
     dealer.handDisplay.children[1].classList.remove('hidden');
     dealer.scoreDisplay.classList.remove('hidden');
-    gameCheck();
     dealerTurn();
 }
+
+const dealer = new Player('Dealer', dealerHandRow, dealerScoreRow);
+const player = new Player('Player', playerHandRow, playerScoreRow);
 
 createDeck();
 fisherYatesShuffle();
