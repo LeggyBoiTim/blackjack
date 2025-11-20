@@ -76,9 +76,9 @@ class Player {
 
 // Create a deck of cards from the suits and ranks.
 const createDeck = () => {
-    for (let i in suits) {
-        for (let j in ranks) {
-            deck.push(suits[i] + ranks[j]);
+    for (let suit of suits) {
+        for (let rank of ranks) {
+            deck.push(suit + rank);
         }
     }
 }
@@ -86,7 +86,7 @@ const createDeck = () => {
 // Shuffles the deck using the Fisher-Yates shuffle.
 const fisherYatesShuffle = () => {
     for (let i in deck) {
-        random = Math.floor(Math.random() * (52 - i));
+        let random = Math.floor(Math.random() * (deck.length - i));
         [deck[i], deck[Number(i) + random]] = [deck[Number(i) + random], deck[i]];
     }
 }
